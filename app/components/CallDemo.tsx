@@ -136,11 +136,26 @@ export default function CallDemo() {
         cleanup();
         setSpeaking(false);
         setStatus("error");
-        setError(e instanceof Error ? e.message : "The call dropped.");
+        setError(
+          e instanceof Error
+            ? e.message
+            : typeof e === "string"
+              ? e
+              : `The call dropped. ${JSON.stringify(e)}`.slice(0, 300)
+        );
         client.stopCall();
       });
 
-      await client.startCall({ accessToken: data.access_token });
+      // SDK v3 against the v3 API: pass the call id as well as the token, so
+      // the transport does not have to infer the room from the JWT alone.
+      await client.startCall({
+        accessToken: data.access_token,
+        callId: data.call_id,
+        // v3 picks the transport per call. Without this the SDK falls back to
+        // livekit and a gateway call connects to nothing, then drops.
+        transport: data.transport,
+        iceServers: data.ice_servers,
+      });
     } catch (e) {
       cleanup();
       setStatus("error");

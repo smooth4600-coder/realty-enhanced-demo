@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const res = await fetch("https://api.retellai.com/v2/create-web-call", {
+  // v2 was retired on 2026-09-30. v3 takes the same body and returns the same fields.
+  const res = await fetch("https://api.retellai.com/v3/create-web-call", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -104,7 +105,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const data = (await res.json()) as { access_token?: string; call_id?: string };
+  const data = (await res.json()) as {
+    access_token?: string;
+    call_id?: string;
+    // v3 decides the transport per call and hands back the ICE servers for it.
+    // The browser SDK still defaults to livekit, so both have to be forwarded.
+    transport?: string;
+    ice_servers?: unknown[];
+  };
   if (!data.access_token || !data.call_id) {
     return NextResponse.json(
       { error: "no_token", message: "Retell returned no access token" },
@@ -119,6 +127,8 @@ export async function POST(req: NextRequest) {
     NextResponse.json({
       access_token: data.access_token,
       call_id: data.call_id,
+      transport: data.transport,
+      ice_servers: data.ice_servers,
       // The call cuts off when the remaining budget runs out, not at a fixed length.
       maxSeconds: left,
       remainingSeconds: left,

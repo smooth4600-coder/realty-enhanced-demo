@@ -12,7 +12,7 @@
     "next": "^15.1.12",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "retell-client-js-sdk": "^2.0.5"
+    "retell-client-js-sdk": "^3.0.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
